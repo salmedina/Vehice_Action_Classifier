@@ -5,59 +5,37 @@
 - VIRAT has 214 videos
 - 7 scenarios / backgrounds from which VP need to be estimated
   - Only one seems to be wrong from the first frame
-  - 
 
-```mermaid
-graph LR
-
-ObjectDetector[Object Detector];
-Frames[Extract Frames];
-Vehicle[Extract Vehicle]
-VP[Vanishing Points];
-Contour[Vehicle Contour];
-3DBBox[3D Bounding Box];
-UnwrapBox[Unwrap Box];
-Orientation[Orientation];
-MvmtClf[Vehicle Movement Classification];
-InteractionClf[Vehicle Interaction Classification];
-
-Frames --> Vehicle;
-ObjectDetector --> Vehicle;
-Frames --> VP;
-Vehicle --> Contour;
-VP --> 3DBBox;
-Frames --> 3DBBox;
-Contour --> 3DBBox;
-3DBBox --> Orientation;
-Orientation --> MvmtClf;
-3DBBox --> UnwrapBox;
-UnwrapBox --> InteractionClf;
-
-```
+![pipeline](/Users/zal/CMU/Projects/DIVA/Notes/imgs/pipeline_diagram.svg)
 
 ### Extract Frames
 
-- Input: Video
+- **Input:** Video
+- **Output:** List of path where the frames are located
 - Use Ffmpeg 
-- Ask if frames were already extracted along with the annotations
 
 ### Vehicle Contour 
 
-- Use Mask-RCNN segmentation for the contour
+- **Input:** Mask-RCNN segmentation result
+- **Output:** Vehicle Contour image patch on frame
+- Process contour from Mask-RCNN segmentation to obtain contour
 
 ### Vanishing Points
 
-- Input: First frame of video
-- Get parallel lines from CNN
-- Cluster the parallel lines based on angle between the lines
-- Number of VP is a predefined value
+- **Input:** First frame of video
+- **Output:** 
+- Processing:
+  - Gets parallel lines through CNN
+  - Clusters parallel lines considering as similarity mtric the angle between lines
+  - Estimate VP
+  - Number of VP is a predefined value set to 3
 
 ### 3DBBox
 
-- Input: the image, VPs, Position of Vehicle, Vehicle Contour
+- **Input:** the image, VPs, Position of Vehicle, Vehicle Contour
+- **Output:** 3DBBox
 
 ### Orientation
 
-- Input: Sequence of 3DBBox
-- 
-
+- **Input:** 3DBBox in image
+- **Output:** List of orientation vectors
