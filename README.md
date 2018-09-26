@@ -6,7 +6,7 @@
 - 7 scenarios / backgrounds from which VP need to be estimated
   - Only one seems to be wrong from the first frame
 
-![pipeline](/Users/zal/CMU/Projects/DIVA/Notes/imgs/pipeline_diagram.svg)
+![pipeline](./imgs/pipeline_diagram.svg)
 
 ### Extract Frames
 
