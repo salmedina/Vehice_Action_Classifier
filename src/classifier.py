@@ -1,43 +1,13 @@
 import cv2
 import numpy as np
 from vehicle import Vehicle
-import math
-from utils import *
-
-
-def get_slope(pt1, v, frame_num, window_size):
-    (x, y) = pt1
-    delta_y = y - v.car_points[frame_num-window_size][1]
-    delta_x = x - v.car_points[frame_num-window_size][0]
-    if delta_x == 0:
-        slope = -1e-100
-    else:
-        slope = delta_y/delta_x
-    return slope
-
-
-def angle_bw_lines(m1, m2):
-    theta = math.degrees(math.atan(abs(m1 - m2)/(1+m1*m2)))
-    # print("angle ", theta, math.atan(abs(m1 - m2)/(1+m1*m2)), m1, m2)
-    return theta
+from utils.utils import *
 
 
 def main():
-    start = 1
-    counter = 0
-    fourcc = cv2.VideoWriter_fourcc(*'mp4v')
-    vout = cv2.VideoWriter()
-    out = vout.open('output.mp4', fourcc, 29, (1898, 688), True)
-    if not out:
-        print("Error creating a video")
-        return
-    img = 0
-    c = 0
+    counter = 0  # to break after counter number of frames
     window_size = 2
-    patience_reset_init_slope = 4
     vehicles = {}
-    delta = 0.01
-    tmp = 0
     with open("../data/car.txt", "r") as f:
         for line in f:
             counter += 1
@@ -45,17 +15,7 @@ def main():
                 break
             val = line.strip().split(",")
             frame_num = int(val[0])
-
-            if frame_num != tmp and not start:
-                cv2.imwrite('color_img.png', img)
-                frame = cv2.imread('color_img.png')
-                vout.write(frame)
-                img = np.zeros((688, 1898, 3), np.uint8)
-            elif start:
-                img = np.zeros((688, 1898, 3), np.uint8)
-                start = 0
             # store the vehicle ids, frame numbers with points
-            c += 1
             vehicle_id = val[1]
             x = int(val[2]) + int(val[4])//2
             y = int(val[3]) + int(val[5])//2
@@ -74,34 +34,21 @@ def main():
                 if v.num_of_frames_covered <= window_size:
                     continue
                 elif v.num_of_frames_covered == window_size+1:
-                    slope = get_slope((x, y), v, frame_num, window_size)
+                    slope = get_vector((x, y), v, frame_num, window_size)
                     v.init_slope = slope
                     continue
 
-            slope = get_slope((x, y), v, frame_num, window_size)
-            theta = angle_bw_lines(slope, v.init_slope)
-            if theta > 45 or theta < -45:
-                # print(theta, frame_num)
-                pass
+            slope = get_vector((x, y), v, frame_num, window_size)
+            theta = angle_between(slope, v.init_slope)
             v.theta.append(theta)
             v.slopes.append(slope)
-            # change the slope
-            # print(slope, frame_num, v.init_slope, theta)
-            if len(v.theta) > patience_reset_init_slope:
-                if abs(v.theta[-1] - v.init_slope) < delta:
-                    # v.init_slope = slope
-                    print(v.init_slope)
-                    print("resetting init slope!")
-            cv2.circle(img, (x, y), 5, (0, 0, 255), -1)
-        tmp = frame_num
 
     for v_id in vehicles:
         print(v_id)
         print(max(vehicles[v_id].theta))
-        utils.hist_bin(vehicles[v_id].theta)
-
-    vout.release()
+        hist_bin(vehicles[v_id].theta)
     cv2.destroyAllWindows()
+
 
 if __name__ == '__main__':
     main()
