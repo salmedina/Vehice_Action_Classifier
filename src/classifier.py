@@ -2,6 +2,7 @@ import cv2
 import numpy as np
 from vehicle import Vehicle
 from utils.utils import *
+import pickle
 
 
 def main():
@@ -47,6 +48,7 @@ def main():
         print(v_id)
         print(max(vehicles[v_id].theta))
         hist_bin(vehicles[v_id].theta)
+        pickle.dump(vehicles[v_id].slopes, open('../data/slopes.pkl', 'wb'))
     cv2.destroyAllWindows()
 
 
