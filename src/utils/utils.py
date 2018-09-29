@@ -13,6 +13,16 @@ def hist_bin(data):
     plt.show()
 
 
+def get_plot(data, title="Angle of the vehicle", xlabel="Frame", ylabel="Norm", max_y=100):
+    plt.title = title
+    plt.plot(data)
+    plt.xlabel(xlabel)
+    plt.ylabel(ylabel)
+    plt.ylim([0, 1])
+    plt.show()
+    plt.clf()
+
+
 def get_vector(pt1, v, frame_num, window_size):
     (x, y) = pt1
     delta_y = y - v.car_points[frame_num-window_size][1]
@@ -23,7 +33,7 @@ def get_vector(pt1, v, frame_num, window_size):
         unit_vector = [0, 0]
     else:
         unit_vector = [distance[0] / norm, distance[1] / norm]
-    return unit_vector
+    return unit_vector, norm
 
 
 def angle_between(v1, v2):
@@ -36,4 +46,7 @@ def angle_between(v1, v2):
     >>> angle_between((1, 0, 0), (-1, 0, 0))
     3.141592653589793
     """
-    return math.degrees(np.arccos(np.clip(np.dot(v1, v2), -1.0, 1.0)))
+    val = math.degrees(np.arccos(np.dot(v1, v2)))
+    if val == 180:
+        print(v1, v2)
+    return val
