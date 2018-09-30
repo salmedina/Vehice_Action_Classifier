@@ -6,7 +6,7 @@ from utils.utils import *
 
 def main():
     counter = 0  # to break after counter number of frames
-    window_size = 15
+    window_size = 3
     vehicles = {}
     global_variables = Global_Variables()
     with open("../data/car.txt", "r") as f:
@@ -28,6 +28,7 @@ def main():
                 vehicles[vehicle_id] = Vehicle()
                 vehicles[vehicle_id].num_of_frames_covered = 1
                 vehicles[vehicle_id].car_points[frame_num] = (x, y)
+                vehicles[vehicle_id].initial_frame = frame_num
                 continue
             else:
                 # get the initial slope until you reach the window size
@@ -40,24 +41,27 @@ def main():
                     vector, norm = get_vector((x, y), v, frame_num, window_size)
                     v.init_slope = vector
                     global_variables.max_norm = max(norm, global_variables.max_norm)
-                    print(vector)
                     continue
 
             vector, norm = get_vector((x, y), v, frame_num, window_size)
             theta = angle_between(vector, v.init_slope)
             v.theta.append(theta)
             v.vectors.append(vector)
-            v.norms.append(norm)
+            v.norms.append((frame_num, norm))
             global_variables.max_norm = max(norm, global_variables.max_norm)
 
+    moving = []
     for v_id in vehicles:
         try:
-            print(v_id)
-            print(max(vehicles[v_id].theta))
-            print(global_variables.max_norm)
-            get_plot([i/global_variables.max_norm for i in vehicles[v_id].norms])
+            v = vehicles[v_id]
+            for pair in v.norms:
+                frame, norm = pair
+                if norm > 0.2:
+                    moving.append(frame)
+            # get_plot([i/global_variables.max_norm for i in vehicles[v_id].norms])
         except:
             continue
+    print("Moving ", len(moving))
     cv2.destroyAllWindows()
 
 
