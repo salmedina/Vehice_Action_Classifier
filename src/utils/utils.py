@@ -1,7 +1,10 @@
 import math
 import numpy as np
+from collections import namedtuple
+from operator import attrgetter
 from matplotlib import pyplot as plt
 
+Tracklet = namedtuple('Tracklet', ['frame', 'x', 'y', 'w', 'h', 'cx', 'cy'])
 
 def hist_bin(data):
     bins = np.arange(-100, 100, 0.1)
@@ -12,9 +15,24 @@ def hist_bin(data):
     plt.ylabel('Frequency')
     plt.show()
 
+def load_tracking_data(tracking_data_path):
+    '''Loads tracking data into dictionary of tracklets with vehicle id as key'''
+    tracking_data = {}
+    with open(tracking_data_path, 'r') as data_file:
+        for line in data_file:
+            frame, id, x, y, w, h, _, _, _, _ = [int(float(field)) for field in line.strip().split(',')]
+            if id not in tracking_data:
+                tracking_data[id] = []
+            tracking_data[id].append(Tracklet(frame, x, y, w, h, x + int(w / 2), y + int(h / 2)))
+
+    for id in tracking_data.keys():
+        tracking_data[id] = sorted(tracking_data[id], key=attrgetter('frame'))
+
+    return tracking_data
+
 
 def plot_data(data, title="Angle of the vehicle", xlabel="Frame", ylabel="Norm", max_y=100):
-    plt.title = title
+    plt.title(title)
     plt.plot(data)
     plt.xlabel(xlabel)
     plt.ylabel(ylabel)
@@ -22,6 +40,16 @@ def plot_data(data, title="Angle of the vehicle", xlabel="Frame", ylabel="Norm",
     plt.show()
     plt.clf()
 
+
+def calc_vector(p1, p2):
+    '''Calculates the vector from p1 to p2'''
+    delta_x = p2[0] - p1[0]
+    delta_y = p2[1] - p1[1]
+
+    norm = math.sqrt(delta_x*delta_x + delta_y*delta_y)
+    unit_vector = (0,0) if norm == 0 else (delta_x/norm, delta_y/norm)
+
+    return unit_vector, norm
 
 def get_vector(pt1, v, frame_num, window_size):
     (x, y) = pt1
@@ -46,6 +74,6 @@ def angle_between(v1, v2):
     3.141592653589793
     """
     val = math.degrees(np.arccos(np.dot(v1, v2)))
-    if val == 180:
+    if val == 180.0:
         print(v1, v2)
     return val
