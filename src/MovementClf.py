@@ -47,7 +47,7 @@ def calc_cars_data(tracking_data, window_sizes):
             if len(tracking_data[tid]) < ws:
                 continue
             cars[tid] = Car()
-            cars[tid].calc_states(tracking_data[tid], ws, 20)
+            cars[tid].calc_states(tracking_data[tid], ws, 30)
 
     return cars
 
