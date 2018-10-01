@@ -40,7 +40,7 @@ def render_video_from_frames(frames_dir, drawing_cache_dir, save_path, start_fra
 
     frame_height, frame_width = cv2.imread(os.path.join(frames_dir, frame_filename_list[0])).shape[:2]
     fourcc = cv2.VideoWriter_fourcc(*'mp4v')
-    output_video = cv2.VideoWriter(save_path, fourcc, 29.97, (frame_width, frame_height), True)
+    output_video = cv2.VideoWriter(save_path, fourcc, fps, (frame_width, frame_height), True)
 
     for frame_path in output_frame_path_list:
         output_video.write(cv2.imread(frame_path))
@@ -60,6 +60,7 @@ def draw_tracking(video_frames_dir, tracking_data, draw_cache_dir, color_palette
     end_frame = 0
 
     for id in tracking_data.keys() if id is None else [id]:
+        print('Drawing tracklets for vehicle # %d'%id)
         drawn_frames_set = set(os.listdir(draw_cache_dir))
         Parallel(n_jobs=mp.cpu_count())(delayed(draw_tracklet)(tracklet = tracklet, drawn_frames_set=drawn_frames_set, draw_cache_dir=draw_cache_dir, video_frames_dir=video_frames_dir, color=color_palette[id]) for tracklet in tracking_data[id])
         min_frame = min(tracking_data[id], key=attrgetter('frame')).frame
@@ -117,8 +118,6 @@ def validate_args(args):
     if not os.path.exists(args.drawCacheDir):
         print('Drawing cache dir does not exist')
         print(args.drawCacheDir)
-        return False
-    if type(args.trackletId) is not int and args.trackletId < 0:
         return False
     return True
 
