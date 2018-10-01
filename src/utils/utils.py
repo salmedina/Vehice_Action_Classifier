@@ -1,6 +1,6 @@
+import math
 import numpy as np
 from matplotlib import pyplot as plt
-import math
 
 
 def hist_bin(data):
@@ -13,12 +13,12 @@ def hist_bin(data):
     plt.show()
 
 
-def get_plot(data, title="Angle of the vehicle", xlabel="Frame", ylabel="Norm", max_y=100):
+def plot_data(data, title="Angle of the vehicle", xlabel="Frame", ylabel="Norm", max_y=100):
     plt.title = title
     plt.plot(data)
     plt.xlabel(xlabel)
     plt.ylabel(ylabel)
-    plt.ylim([0, 1])
+    # plt.ylim([0, 1])
     plt.show()
     plt.clf()
 
@@ -38,7 +38,6 @@ def get_vector(pt1, v, frame_num, window_size):
 
 def angle_between(v1, v2):
     """ Returns the angle in radians between vectors 'v1' and 'v2'::
-
     >>> angle_between((1, 0, 0), (0, 1, 0))
     1.5707963267948966
     >>> angle_between((1, 0, 0), (1, 0, 0))
