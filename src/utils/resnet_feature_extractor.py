@@ -18,5 +18,5 @@ for dir_ in os.listdir(dir_path):
         img_data = np.expand_dims(img_data, axis=0)
         img_data = preprocess_input(img_data)
         resnet_feature = model.predict(img_data)
-        print(resnet_feature.shape)
-        np.save(open('/home/hima/hima/data/resnet_features_insight/'+tmp_dir+"_"+file))
+        print(resnet_feature.shape, '/home/hima/hima/data/resnet_features_insight/'+dir_+"_"+file[:-3])
+        np.save(open('/home/hima/hima/data/resnet_features_insight/'+dir_+"_"+file[:-3]+"npy",'w'), resnet_feature)
