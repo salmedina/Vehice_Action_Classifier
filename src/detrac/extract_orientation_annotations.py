@@ -17,6 +17,7 @@ def extract_orientation_data(xml_filepath):
     xml = untangle.parse(xml_filepath)
 
     data = []
+    data.append('frame,id,x,y,w,h,orientation')
     for frame in xml.sequence.frame:
         frame_num = frame['num']
         for t in frame.target_list.target:
