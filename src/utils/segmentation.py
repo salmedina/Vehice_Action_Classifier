@@ -4,7 +4,7 @@ import numpy as np
 from PIL import Image
 import matplotlib.pyplot as plt
 
-def bb_intersection_over_union(box1, box2):
+def calc_iou(box1, box2):
     # determine the (x, y)-coordinates of the intersection rectangle
     x1 = max(box1[0], box2[0])
     y1 = max(box1[1], box2[1])
@@ -27,7 +27,7 @@ def bb_intersection_over_union(box1, box2):
     # return the intersection over union value
     return iou
 
-def extract_car_masks_from_json(json_path):
+def extract_car_segmentations(json_path):
     '''
     Data in files is a list of dicts with the following keys:
     'segmentation': {'counts','size'}
@@ -40,33 +40,18 @@ def extract_car_masks_from_json(json_path):
     '''
 
     data = json.load(open(json_path))
-    car_masks = []
-    for det in data:
-        if det['cat_name'] == 'car':
-            car_mask = {}
-            car_mask['score'] = det['score']
-            car_mask['bbox'] = det['bbox']
-            car_mask['mask'] = maskUtils.decode(det)
+    car_detections = []
+    for detection in data:
+        if detection['cat_name'] == 'car':
+            car_seg = {}
+            car_seg['score'] = detection['score']
+            car_seg['bbox'] = [int(x) for x in detection['bbox']]
+            car_seg['mask'] = maskUtils.decode(detection['segmentation']) * 255
+            car_detections.append(car_seg)
 
-    return car_masks
+    return car_detections
 
-def get_box_mask(box, json_path):
-    car_masks = extract_car_masks_from_json(json_path)
-
-def main_proto():
-    start_pos, end_pos = 1500, 2000
-
-    for i in range(start_pos, end_pos):
-        filename = '/Users/zal/CMU/Projects/DIVA/Data/ObjectDetector/VIRAT_S_000000_F_%08d.json' % i
-        car_segmentations = extract_car_masks_from_json(filename)
-        if len(car_segmentations) > 0:
-            masks = [s['mask'] for s in car_segmentations]
-            compound_mask = masks[0]
-            for m in masks[1:]:
-                compound_mask = np.logical_and(compound_mask, m)
-
-        Image.fromarray(compound_mask).save('/Users/zal/CMU/Projects/DIVA/Data/ObjectDetector/imgs/VIRAT_S_000000_F_%08d.png' % i)
-        break
-
-if __name__ == '__main__':
-    main_proto()
+def find_segmentation(query_bbox, json_path):
+    car_segmentations = extract_car_segmentations(json_path)
+    match_idx = np.argmax([calc_iou(query_bbox, seg['bbox']) for seg in car_segmentations])
+    return car_segmentations[match_idx]
