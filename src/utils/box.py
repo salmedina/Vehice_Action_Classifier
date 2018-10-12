@@ -156,3 +156,51 @@ def cal_boxes(frame, calibration):
     for vehicle in frame.vehicles:
         vehicle.image_box_3d = build_box_3d(vehicle.image_mask, calibration)
         vehicle.plane_box = cal_plane_box(vehicle.image_box_3d, calibration)
+
+
+def draw_point(img, point, color='y'):
+    cv2.circle(img, (int(point[0]), int(point[1])), 3, color, 2)
+
+
+def draw_segment(img, point_1, point_2, linewidth=3, marker=None, color=None):
+    pt1 = (int(point_1[0]), int(point_1[1]))
+    pt2 = (int(point_2[0]), int(point_2[1]))
+    cv2.line(img, pt1, pt2, color, linewidth)
+
+
+def draw_box_3d(img, box_3d, show_hidden=True, color=None,
+                straight_thres=5):
+    colors = [(255,0,0), (0,0,255), (0,255,0), (200,0,0)]
+    if color is not None:
+        colors = [color] * 4
+    segments = [(box_3d.points.a, box_3d.points.d, 0),
+                (box_3d.points.f, box_3d.points.g, 0),
+                (box_3d.points.h, box_3d.points.e, 0),
+                (box_3d.points.b, box_3d.points.c, 0),
+                (box_3d.points.a, box_3d.points.b, 1),
+                (box_3d.points.e, box_3d.points.f, 1),
+                (box_3d.points.h, box_3d.points.g, 1),
+                (box_3d.points.d, box_3d.points.c, 1),
+                (box_3d.points.a, box_3d.points.e, 2),
+                (box_3d.points.d, box_3d.points.h, 2),
+                (box_3d.points.b, box_3d.points.f, 2),
+                (box_3d.points.g, box_3d.points.c, 2)]
+    show_ids = set(range(len(segments)))
+    hidden_segments = {'left': set([3, 7, 11]),
+                       'right': set([2, 5, 8]),
+                       'straight_left': set([0, 9]),
+                       'straight_right': set([1, 10])}
+    if not show_hidden:
+        if box_3d.direction >= 0:
+            show_ids -= hidden_segments['left']
+        else:
+            show_ids -= hidden_segments['right']
+        if box_3d.direction > straight_thres:
+            show_ids -= hidden_segments['straight_left']
+        elif box_3d.direction < -straight_thres:
+            show_ids -= hidden_segments['straight_right']
+    for i in show_ids:
+        point_1, point_2, color_id = segments[i]
+        draw_segment(img, point_1, point_2, color=colors[color_id])
+    for point in box_3d.points.values():
+        draw_point(img, point, color=colors[3])
