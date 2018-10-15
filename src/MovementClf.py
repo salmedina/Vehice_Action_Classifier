@@ -43,7 +43,8 @@ def plot_cars_norm(cars, window_sizes):
         car = cars[cid]
         plt.title('Norm id@%d' % (cid))
         for ws in window_sizes:
-            plt.plot(car.get_attr_list('norm', ws), label='%d frames'%(ws))
+            if ws in car.get_window_sizes():
+                plt.plot(car.get_attr_list('norm', ws), label='%d frames'%(ws))
         plt.xlabel('Frame Index')
         plt.ylabel('Distance in Pixels')
         plt.legend()
@@ -56,7 +57,8 @@ def plot_cars_angles(cars, window_sizes):
         car = cars[cid]
         plt.title('Angles id@%d' % (cid))
         for ws in window_sizes:
-            plt.plot(car.get_attr_list('angle', ws), label='%d frames'%(ws))
+            if ws in car.get_window_sizes():
+                plt.plot(car.get_attr_list('angle', ws), label='%d frames'%(ws))
         plt.xlabel('Frame Index')
         plt.ylabel('Degrees')
         plt.legend()
@@ -69,7 +71,8 @@ def plot_cars_moving(cars, window_sizes):
         car = cars[cid]
         plt.title('Moving id@%d' % (cid))
         for ws in window_sizes:
-            plt.plot(car.get_attr_list('moving', ws), label='%d frames'%(ws))
+            if ws in car.get_window_sizes():
+                plt.plot(car.get_attr_list('moving', ws), label='%d frames'%(ws))
         plt.xlabel('Frame Index')
         plt.ylabel('Moving Impulse')
         plt.legend()
@@ -81,21 +84,28 @@ def calc_cars_data(tracking_data, window_sizes):
     cars = {}
 
     for tid in tracking_data.keys():
+        cars[tid] = Car()
         for ws in window_sizes:
             if len(tracking_data[tid]) < ws:
                 continue
-            cars[tid] = Car()
-            cars[tid].calc_states(tracking_data[tid], ws, 30)
+            cars[tid].calc_states(tracking_data[tid], ws, window_sizes)
 
     return cars
 
 def main_analysis(tracking_data_path, window_sizes):
     tracking_data = load_tracking_data(tracking_data_path)
     cars = calc_cars_data(tracking_data, window_sizes)
-    render_plots_for_video(cars, 1, 60, '/Volumes/Seagate Backup Plus Drive/OUTPUT/VIRAT/VIRAT_S_000000/Norm/', '/Volumes/Seagate Backup Plus Drive/OUTPUT/VIRAT/VIRAT_S_000000/Angles/')
+    # render_plots_for_video(cars, 1, 60, '/Volumes/Seagate Backup Plus Drive/OUTPUT/VIRAT/VIRAT_S_000000/Norm/', '/Volumes/Seagate Backup Plus Drive/OUTPUT/VIRAT/VIRAT_S_000000/Angles/')
     # plot_cars_moving(cars, window_sizes)
-    # plot_cars_norm(cars, window_sizes)
+    plot_cars_norm(cars, window_sizes)
     # plot_cars_angles(cars, window_sizes)
+
+def main_tracking_data(tracking_data_path):
+    tracking_data = load_tracking_data(tracking_data_path)
+    cars = calc_cars_data(tracking_data, window_sizes)
+    norms = cars[1].get_attr_list('norm', 1)
+    for n in norms:
+        print(n)
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description='Classifies if tracklets are moving')
@@ -105,4 +115,5 @@ if __name__ == '__main__':
 
     # main(args.trackingData, args.windowSize)
     window_sizes = [int(x) for x in args.windowSizes.strip().split(',')]
-    main_analysis(args.trackingData, window_sizes)
+    #main_analysis(args.trackingData, [30, 60, 90, 120])
+    main_tracking_data(args.trackingData)
