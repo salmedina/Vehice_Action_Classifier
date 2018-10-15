@@ -1,10 +1,13 @@
 import pycocotools.mask as maskUtils
 import json
 import numpy as np
-from PIL import Image
-import matplotlib.pyplot as plt
+from easydict import EasyDict as edict
 
 def calc_iou(box1, box2):
+    # Transform to two point bbox [x1, y1, x2, y2] instead of [x, y, w, h]
+    box1 = [box1[0], box1[1], box1[0]+box1[2], box1[1]+box1[3]]
+    box2 = [box2[0], box2[1], box2[0]+box2[2], box2[1]+box2[3]]
+
     # determine the (x, y)-coordinates of the intersection rectangle
     x1 = max(box1[0], box2[0])
     y1 = max(box1[1], box2[1])
@@ -43,10 +46,11 @@ def extract_car_segmentations(json_path):
     car_detections = []
     for detection in data:
         if detection['cat_name'] == 'car':
-            car_seg = {}
-            car_seg['score'] = detection['score']
-            car_seg['bbox'] = [int(x) for x in detection['bbox']]
-            car_seg['mask'] = maskUtils.decode(detection['segmentation']) * 255
+            car_seg = edict(dict(score=0.0, bbox=[], mask=None, size=(0, 0)))
+            car_seg.score = detection['score']
+            car_seg.bbox = [int(x) for x in detection['bbox']]
+            car_seg.mask = maskUtils.decode(detection['segmentation'])
+            car_seg.size = detection['segmentation']['size']
             car_detections.append(car_seg)
 
     return car_detections

@@ -1,8 +1,9 @@
 import argparse
 import os
+from operator import attrgetter
+
 import seaborn as sns
 from Car import Car
-from operator import attrgetter
 from matplotlib import pyplot as plt
 from utils.utils import load_tracking_data
 
