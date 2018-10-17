@@ -1,8 +1,9 @@
 import sys
 import glob
+import numpy as np
 
 
-cfg_data_dir = '/home/harry/data/DETRAC-Train-Data-Orientation/'
+cfg_data_dir = '/mnt/sdd/tingyaoh/diva/DETRAC-Train-Data-Orientation/'
 cfg_annot_fn = cfg_data_dir+'orientation_labels_b_16.csv'
 cfg_fnlist = glob.glob(cfg_data_dir+'*.jpg')
 
@@ -19,6 +20,6 @@ def cfg_extract_data_split(lst, views):
             ifn, degree, binn = l.split(',')
             imgfnlist.append(cfg_data_dir+ifn)
             degreelist.append(float(degree))
-            binlist.append(int(binn))
+            binlist.append(int(np.floor(float(binn)/2)))
     return imgfnlist, degreelist, binlist
 

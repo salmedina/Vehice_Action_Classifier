@@ -19,3 +19,17 @@ class ResNet50(nn.Module):
         f = x.view(x.size(0), -1)
         y = self.classifier(f)
         return y
+        
+class ResNet18(nn.Module):
+    def __init__(self, num_classes, **kwargs):
+        super(ResNet18, self).__init__()
+        resnet18 = torchvision.models.resnet18(pretrained=True)
+        self.base = nn.Sequential(*list(resnet18.children())[:-2])
+        self.classifier = nn.Linear(512, num_classes)
+
+    def forward(self, x):
+        x = self.base(x)
+        x = F.avg_pool2d(x, x.size()[2:])
+        f = x.view(x.size(0), -1)
+        y = self.classifier(f)
+        return y
