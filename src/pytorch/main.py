@@ -33,9 +33,9 @@ def test(data_loader, model, criterion):
 ### arguments
 parser = argparse.ArgumentParser()
 parser.add_argument('--lr', type=float, default=0.005, help='Initial learning rate.')
-parser.add_argument('--size', type=int, default=50, help='Size of reshaped image')
+parser.add_argument('--size', type=int, default=125, help='Size of reshaped image')
 parser.add_argument('--weight_decay', type=float, default=5e-4, help='Weight decay (L2 loss on parameters).')
-parser.add_argument('--epochs', type=int, default=100, help='Max num of epochs')
+parser.add_argument('--epochs', type=int, default=40, help='Max num of epochs')
 parser.add_argument('--batch_size', type=int, default=16, help='Batch size')
 parser.add_argument('--workers', type=int, default=4, help='Num of workers for data loading')
 parser.add_argument('--bins', type=int, default=16, help='Num bins')
