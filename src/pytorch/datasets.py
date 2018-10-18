@@ -1,10 +1,6 @@
-import sys
-import os
-from PIL import Image
-import numpy as np
 import os.path as osp
 
-import torch
+from PIL import Image
 from torch.utils.data import Dataset
 
 
@@ -22,7 +18,6 @@ def read_image(img_path):
             print("IOError incurred when reading '{}'. Will redo. Don't worry. Just chill.".format(img_path))
             pass
     return img
-
 
 
 class CarOrientationDataset(Dataset):
