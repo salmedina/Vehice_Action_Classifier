@@ -1,21 +1,16 @@
 import argparse
-<<<<<<< HEAD
-from myconfig import *
-from datasets import CarOrientationDataset
-from models import ResNet18, ResNet50
-=======
->>>>>>> EnhancePytorch
-
 import torch
 import torch.nn as nn
 import torchvision.transforms as T
 from datasets import CarOrientationDataset
-from models import ResNet50, ResNet18
+from models import ResNet18
+from myconfig import *
 from myconfig import *
 from torch.autograd import Variable
 from torch.optim import Adam
-from torch.utils.data import DataLoader
 from torch.optim import lr_scheduler
+from torch.utils.data import DataLoader
+
 
 def test(data_loader, model, criterion):
     model.eval()
@@ -26,12 +21,12 @@ def test(data_loader, model, criterion):
         imgs, degree_bins = Variable(imgs.cuda()), Variable(degree_bins.cuda())
         out = model(imgs)
         loss = criterion(out, degree_bins)
-        total_loss+=loss.data[0]
+        total_loss+=float(loss.item())
         _, predicted = torch.max(out.data, 1)
         matched += predicted.eq(degree_bins.data).sum()
         total += degree_bins.size(0)
     acc = 100.*matched/total
-    print('total loss', total_loss/len(data_loader))
+    print('Total loss %.06f'% (total_loss/len(data_loader)))
     return acc
 
 
@@ -82,7 +77,7 @@ exp_lr_scheduler = lr_scheduler.StepLR(optimizer, step_size=7, gamma=0.1)
 criterion = nn.CrossEntropyLoss()
 
 print('Performing initial validation')
-acc = test(valid_loader,model)
+acc = test(valid_loader,model, criterion)
 print('Initial acc: {:.2f}'.format(acc))
 
 best_test_acc = 0.0
@@ -101,9 +96,8 @@ for ep in range(args.epochs):
         optimizer.step()
         total_loss+=float(loss.item())
 
-    print('epoch: {}\t loss: {:.6f}'.format(ep, total_loss / len(train_loader)))
     if (ep+1)%1==0:
-        print('epoch: {}\t loss: {:.6f}'.format(ep,total_loss/len(train_loader)))
+        print('Epoch: {}\t Loss: {:.6f}'.format(ep,total_loss/len(train_loader)))
         acc = test(valid_loader,model, criterion)
         print('Validation acc: {:.2f}'.format(acc))
         if acc > best_test_acc:
