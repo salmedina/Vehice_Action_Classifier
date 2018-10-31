@@ -59,7 +59,7 @@ softmax = nn.Softmax().cuda()
 sys_out = {}                                                                                                                                                                                                        
 sys_out['activities'] = []                                                                                                                                                                                          
 actcount = 0
-
+step = 150
 ld = 0.1
 for vid in valid_vid_list:
     trackdict = read_mot_as_defaultdict(car_trk_dir+vid+'.txt')
@@ -74,48 +74,52 @@ for vid in valid_vid_list:
         vmean = np.mean([np.linalg.norm(car.vs[i,:]) for i in range(len(car.vs))])
         if vmean<1.0: continue
 
-        ### RNN frame-level detection
-        feat = Variable(torch.from_numpy(car.vs).cuda())
-        feat = feat.unsqueeze(0)
-        out = model(feat)
-        out = softmax(out).data.cpu().numpy()
+        for t in range(0,len(car.vs),step):
+            ss, ee = t, min(len(car.vs), t+2*step)
+            if ee-ss<20: continue
+            ### RNN frame-level detection
+            #feat = Variable(torch.from_numpy(car.vs).cuda())
+            feat = Variable(torch.from_numpy(feat_np[ss:ee]).float().cuda())
+            feat = feat.unsqueeze(0)
+            out = model(feat)
+            out = softmax(out).data.cpu().numpy()
 
 
-        ### turn right
-        ## segment detection from RNN score
-        scores = out[:,1]
-        s,e,score = detect_from_score_array(scores, ld)
-        print(s,e,score)
-        ## output NIST format
-        if s>0 and e>0 and e-s>5:
-            #act_out = output_activity(actcount, name='vehicle_turning_right', score=score/(e-s+1), vid=vid, start=start+s, end=start+e)
-            act_out = output_activity(actcount, name='vehicle_turning_right', score=topk_avg_score(scores[s:e+1].tolist()), vid=vid, start=start+ss+s, end=start+ss+e)
-            sys_out['activities'].append(act_out)
-            actcount+=1
+            ### turn right
+            ## segment detection from RNN score
+            scores = out[:,1]
+            s,e,score = detect_from_score_array(scores, ld)
+            print(s,e,score)
+            ## output NIST format
+            if s>0 and e>0 and e-s>5:
+                #act_out = output_activity(actcount, name='vehicle_turning_right', score=score/(e-s+1), vid=vid, start=start+s, end=start+e)
+                act_out = output_activity(actcount, name='vehicle_turning_right', score=topk_avg_score(scores[s:e+1].tolist()), vid=vid, start=start+ss+s, end=start+ss+e)
+                sys_out['activities'].append(act_out)
+                actcount+=1
 
-        ### turn left
-        ## segment detection from RNN score
-        scores = out[:,2]
-        s,e,score = detect_from_score_array(scores, ld)
-        print(s,e,score)
-        ## output NIST format
-        if s>0 and e>0 and e-s>5:
-            #act_out = output_activity(actcount, name='vehicle_turning_left', score=score/(e-s+1), vid=vid, start=start+s, end=start+e)
-            act_out = output_activity(actcount, name='vehicle_turning_left', score=topk_avg_score(scores[s:e+1].tolist()), vid=vid, start=start+ss+s, end=start+ss+e)
-            sys_out['activities'].append(act_out)
-            actcount+=1
+            ### turn left
+            ## segment detection from RNN score
+            scores = out[:,2]
+            s,e,score = detect_from_score_array(scores, ld)
+            print(s,e,score)
+            ## output NIST format
+            if s>0 and e>0 and e-s>5:
+                #act_out = output_activity(actcount, name='vehicle_turning_left', score=score/(e-s+1), vid=vid, start=start+s, end=start+e)
+                act_out = output_activity(actcount, name='vehicle_turning_left', score=topk_avg_score(scores[s:e+1].tolist()), vid=vid, start=start+ss+s, end=start+ss+e)
+                sys_out['activities'].append(act_out)
+                actcount+=1
 
-        scores = out[:,3]
-        s,e,score = detect_from_score_array(scores, ld)
-        print(s,e,score)
-        ## output NIST format
-        if s>0 and e>0 and e-s>5:
-            #act_out = output_activity(actcount, name='vehicle_u_turn', score=score/(e-s+1), vid=vid, start=start+ss+s, end=start+ss+e)
-            act_out = output_activity(actcount, name='vehicle_u_turn', score=topk_avg_score(scores[s:e+1].tolist()), vid=vid, start=start+ss+s, end=start+ss+e)
-            sys_out['activities'].append(act_out)
+            scores = out[:,3]
+            s,e,score = detect_from_score_array(scores, ld)
+            print(s,e,score)
+            ## output NIST format
+            if s>0 and e>0 and e-s>5:
+                #act_out = output_activity(actcount, name='vehicle_u_turn', score=score/(e-s+1), vid=vid, start=start+ss+s, end=start+ss+e)
+                act_out = output_activity(actcount, name='vehicle_u_turn', score=topk_avg_score(scores[s:e+1].tolist()), vid=vid, start=start+ss+s, end=start+ss+e)
+                sys_out['activities'].append(act_out)
 
-            bbox = [car.get_box_from_t(start+tt) for tt in range(s,e+1)]
-            actcount+=1
+                bbox = [car.get_box_from_t(start+tt) for tt in range(s,e+1)]
+                actcount+=1
 
 
 
