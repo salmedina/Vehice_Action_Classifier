@@ -85,7 +85,7 @@ for vid in valid_vid_list:
         if s>0 and e>0 and e-s>5:
             act_out = output_activity(actcount, name='vehicle_turning_right', score=score/(e-s+1), vid=vid, start=start+s, end=start+e)
             sys_out['activities'].append(act_out)
-        actcount+=1
+            actcount+=1
 
         ### turn left
         ## segment detection from RNN score
@@ -96,7 +96,19 @@ for vid in valid_vid_list:
         if s>0 and e>0 and e-s>5:
             act_out = output_activity(actcount, name='vehicle_turning_left', score=score/(e-s+1), vid=vid, start=start+s, end=start+e)
             sys_out['activities'].append(act_out)
-        actcount+=1
+            actcount+=1
+
+        scores = out[:,3]
+        s,e,score = detect_from_score_array(scores, ld)
+        print(s,e,score)
+        ## output NIST format
+        if s>0 and e>0 and e-s>5:
+            #act_out = output_activity(actcount, name='vehicle_u_turn', score=score/(e-s+1), vid=vid, start=start+ss+s, end=start+ss+e)
+            act_out = output_activity(actcount, name='vehicle_u_turn', score=topk_avg_score(scores[s:e+1].tolist()), vid=vid, start=start+ss+s, end=start+ss+e)
+            sys_out['activities'].append(act_out)
+
+            bbox = [car.get_box_from_t(start+tt) for tt in range(s,e+1)]
+            actcount+=1
 
 
 
