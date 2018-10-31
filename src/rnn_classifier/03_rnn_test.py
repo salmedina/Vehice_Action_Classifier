@@ -45,6 +45,11 @@ def read_mot_as_defaultdict(mot_output_fn):
         trackdict[lst[1]].append((t,box))
     return trackdict
 
+def topk_avg_score(scores, k=8):
+    scores = sorted(scores, reverse=True)
+    if len(scores)<k: return np.mean(scores)
+    else: return np.mean(scores[:k])
+
 model = Bid_RNN(2, 4, class_num=4).cuda()
 model.eval()
 model.load_state_dict(torch.load('rnn_state.pt'))
@@ -83,7 +88,8 @@ for vid in valid_vid_list:
         print(s,e,score)
         ## output NIST format
         if s>0 and e>0 and e-s>5:
-            act_out = output_activity(actcount, name='vehicle_turning_right', score=score/(e-s+1), vid=vid, start=start+s, end=start+e)
+            #act_out = output_activity(actcount, name='vehicle_turning_right', score=score/(e-s+1), vid=vid, start=start+s, end=start+e)
+            act_out = output_activity(actcount, name='vehicle_turning_right', score=topk_avg_score(scores[s:e+1].tolist()), vid=vid, start=start+ss+s, end=start+ss+e)
             sys_out['activities'].append(act_out)
             actcount+=1
 
@@ -94,7 +100,8 @@ for vid in valid_vid_list:
         print(s,e,score)
         ## output NIST format
         if s>0 and e>0 and e-s>5:
-            act_out = output_activity(actcount, name='vehicle_turning_left', score=score/(e-s+1), vid=vid, start=start+s, end=start+e)
+            #act_out = output_activity(actcount, name='vehicle_turning_left', score=score/(e-s+1), vid=vid, start=start+s, end=start+e)
+            act_out = output_activity(actcount, name='vehicle_turning_left', score=topk_avg_score(scores[s:e+1].tolist()), vid=vid, start=start+ss+s, end=start+ss+e)
             sys_out['activities'].append(act_out)
             actcount+=1
 
