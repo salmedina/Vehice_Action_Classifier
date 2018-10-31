@@ -60,7 +60,7 @@ sys_out = {}
 sys_out['activities'] = []                                                                                                                                                                                          
 actcount = 0
 step = 150
-ld = 0.1
+ld = 0.05
 for vid in valid_vid_list:
     trackdict = read_mot_as_defaultdict(car_trk_dir+vid+'.txt')
     for k in trackdict.keys():
@@ -79,7 +79,7 @@ for vid in valid_vid_list:
             if ee-ss<20: continue
             ### RNN frame-level detection
             #feat = Variable(torch.from_numpy(car.vs).cuda())
-            feat = Variable(torch.from_numpy(feat_np[ss:ee]).float().cuda())
+            feat = Variable(torch.from_numpy(car.vs[ss:ee]).float().cuda())
             feat = feat.unsqueeze(0)
             out = model(feat)
             out = softmax(out).data.cpu().numpy()

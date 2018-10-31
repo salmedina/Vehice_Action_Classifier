@@ -8,6 +8,15 @@ import torch.nn as nn
 from torch.autograd import Variable
 from model import Bid_RNN
 
+step = 150
+def expand_feat(feat,lab):
+    split_feat, split_lab = [],[]
+    for t in range(0, len(lab), step):
+        e = min(t+2*step, len(lab))
+        split_feat.append(feat[t:e])
+        split_lab.append(lab[t:e])
+    return split_feat, split_lab
+
 model = Bid_RNN(2, 4, class_num=4).cuda()
 model.train()
 criterion = nn.CrossEntropyLoss()
@@ -15,12 +24,19 @@ optimizer = torch.optim.Adam(model.parameters(), lr=0.001)
 
 featlst,lablst = [], []
 for vid in train_vid_list:
-    feats, labs = pickle.load(open('data/'+vid+'.pkl','rb'),encoding='latin1')
-    featlst+=feats
-    lablst+=labs
+    feats, labs = pickle.load(open('data/'+vid+'.pkl','rb'))
+    for feat, lab in zip(feats,labs):
+        if len(lab)>2*step:
+            feat,lab = expand_feat(feat, lab)
+            featlst+=feat
+            lablst+=lab
+        else:
+            featlst.append(feat)
+            lablst.append(lab)
+
 print('tracklet num:', len(featlst))
 
-for epoch in range(100):
+for epoch in range(50):
     total_loss = 0
     for i in np.random.permutation(len(featlst)).tolist():
         feat, labs = featlst[i], lablst[i]

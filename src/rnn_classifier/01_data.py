@@ -67,14 +67,20 @@ seglen = 60
 cmd = 'mkdir -p data/'
 os.system(cmd)
 
-for vid in train_vid_list:
+for vid in train_vid_list+valid_vid_list:
     featlst = []
     lablst = []
-    
-    actlst = parse_diva_act_yaml(train_annot_path+vid+'.activities.yml')
-    geomlst = parse_diva_geom_yaml(train_annot_path+vid+'.geom.yml')
-    geom_id_dict = get_geom_id_list(geomlst)
-    typedict = parse_diva_type_yaml(train_annot_path+vid+'.types.yml')
+
+    if vid in train_vid_list:
+        actlst = parse_diva_act_yaml(train_annot_path+vid+'.activities.yml')
+        geomlst = parse_diva_geom_yaml(train_annot_path+vid+'.geom.yml')
+        geom_id_dict = get_geom_id_list(geomlst)
+        typedict = parse_diva_type_yaml(train_annot_path+vid+'.types.yml')
+    else:
+        actlst = parse_diva_act_yaml(valid_annot_path+vid+'.activities.yml')
+        geomlst = parse_diva_geom_yaml(valid_annot_path+vid+'.geom.yml')
+        geom_id_dict = get_geom_id_list(geomlst)
+        typedict = parse_diva_type_yaml(valid_annot_path+vid+'.types.yml')
 
     ### extract all ground truth tracklet
     
