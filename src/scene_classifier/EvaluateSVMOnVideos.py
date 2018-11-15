@@ -47,13 +47,14 @@ def plot_cm(cm, class_names, figsize, fontsize):
 
 if __name__ == '__main__':
 
-    data_path = '/home/zal/Data/VIRAT/Frames/first_frames'
-    device = torch.device('cpu')
+    data_path = '/home/zal/Data/VIRAT/Frames/imgs/'
+    anno_path = '/home/zal/Data/VIRAT/Frames/first_frames/annotations.csv'
+    device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
+    print(device)
     resnet = load_resnet(device)
     svm_model = pickle.load(open('/home/zal/Devel/Vehice_Action_Classifier/output/scene_19_clf_svm_linear.pkl', 'rb'))
 
     # Annotations is a csv with videoclip subdir name and label
-    anno_path = osp.join(data_path, 'annotations.csv')
     anno_data = []
     with open(anno_path, newline='') as csvfile:
         reader = csv.reader(csvfile)
@@ -62,15 +63,17 @@ if __name__ == '__main__':
     data_x, data_y = zip(*anno_data)
     data_y = [int(y) for y in data_y]
 
+    start_test_frame = 30
+    num_test_frames = 15
     cm = np.zeros((19, 19), dtype=np.int)
     for video_dir, y in zip(data_x, data_y):
         videoclip_path = osp.join(data_path, video_dir)
         print(videoclip_path, end=', ')
         resnet_feats = []
-        video_dataset = VideoFramesDataset(osp.join(data_path, video_dir), 30, 224)
-        video_dataloader = DataLoader(video_dataset, batch_size=30, shuffle=False, num_workers=16)
+        video_dataset = VideoFramesDataset(videoclip_path, start_test_frame, num_test_frames, 224)
+        video_dataloader = DataLoader(video_dataset, batch_size=num_test_frames, shuffle=False, num_workers=16)
         frames_tensor = next(iter(video_dataloader))
-        resnet_feats = resnet(frames_tensor).reshape((30,512)).data.numpy()
+        resnet_feats = resnet(frames_tensor).cpu().reshape((num_test_frames,512)).data.numpy()
         frame_prediction = svm_model.predict(resnet_feats)
         vid_prediction = np.argmax(np.bincount(frame_prediction))
         print(y, vid_prediction)

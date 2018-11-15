@@ -7,7 +7,7 @@ from torchvision import transforms
 
 class VideoFramesDataset(Dataset):
 
-    def __init__(self, video_dir, num_frames, size):
+    def __init__(self, video_dir, start_frame, num_frames, size):
         '''
         Loads the first num_frames frames of the video
         :param video_dir: dir path for the video clip to be processed in batch
@@ -19,7 +19,7 @@ class VideoFramesDataset(Dataset):
 
         frames_path_list = glob(osp.join(video_dir, '*.jpg'))
         frames_path_list.sort(key=path_num_val)
-        self.path_list = frames_path_list[:num_frames]
+        self.path_list = frames_path_list[start_frame:start_frame+num_frames]
         self.size = size
         self.length = len(self.path_list)
         self.transforms = transforms.ToTensor()
