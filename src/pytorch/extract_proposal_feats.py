@@ -10,6 +10,7 @@ from torch.autograd import Variable
 from PIL import Image
 import numpy as np
 from models import ResNet18
+import argparse
 
 i2t = transforms.ToTensor()
 device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
@@ -30,8 +31,8 @@ def extract_frames(video_path, skip_frame=8):
     count = 0
     frames = []
     while success:
-      if count%8 == 0:
-        frames.append(image)
+      if count%skip_frame == 0:
+        frames.append(cv2.cvtColor(image, cv2.COLOR_BGR2RGB))
       success,image = vidcap.read()
       count += 1
     return frames
@@ -41,11 +42,11 @@ def extract_feats(resnet, video_frames, device):
     for idx, frame in enumerate(video_frames):
         frame_img = Image.fromarray(frame).resize((224, 224), Image.ANTIALIAS)
         img_tensor = i2t(frame_img).view(1, 3, 224, 224).to(device)
-        output = resnet(img_tensor).transpose(1,2).transpose(2,3)
-        feats[idx, :, :, :] = output.cpu()
+        output = resnet(img_tensor)
+        feats[idx, :, :, :] = np.moveaxis(output.cpu().data.numpy(), 1, -1)
     return feats
 
-def safe_mkdirs(path)
+def safe_mkdirs(path):
     if not osp.exists(path):
         os.makedirs(path)
 
@@ -66,13 +67,13 @@ if __name__ == '__main__':
     parser = argparse.ArgumentParser()
     parser.add_argument('--proposals', type=str, help='Directory with proposals')
     parser.add_argument('--numbins', type=int, help='Number of orientation bins of model')
-    parser.add_argument('--model', type='str', help='Path for orientation model')
+    parser.add_argument('--model', type=str, help='Path for orientation model')
     parser.add_argument('--savedir', type=str, help='Save directory for orientation feats')
     parser.add_argument('--videoname', type=str, default='video.mp4', help='Name of video for each proposal')
     args = parser.parse_args()
 
-    source_dir = '/media/zal/Alfheim/Data/VIRAT/proposals/'
-    save_dir = '/media/zal/Alfheim/Data/VIRAT/orientation/'
+    source_dir = '/mnt/Alfheim/Data/VIRAT/Proposals/'
+    save_dir = '/mnt/Alfheim/Data/VIRAT/OrientationFeats/'
     model_path = '/home/zal/Devel/Vehice_Action_Classifier/src/pytorch/models/resnet18_pretrained_bs_128_aug_rot_acc_70v0.pt'
 
     main(source_dir, model_path, 16, save_dir, 'video.mp4')
