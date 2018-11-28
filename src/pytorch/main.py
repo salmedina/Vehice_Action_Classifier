@@ -10,7 +10,10 @@ from torch.autograd import Variable
 from torch.optim import Adam
 from torch.optim import lr_scheduler
 from torch.utils.data import DataLoader
+import sys
 
+device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
+print('Torch device:', device)
 
 def test(data_loader, model, criterion):
     model.eval()
@@ -79,14 +82,16 @@ criterion = nn.CrossEntropyLoss()
 print('Performing initial validation')
 acc = test(valid_loader,model, criterion)
 print('Initial acc: {:.2f}'.format(acc))
-
 best_test_acc = 0.0
+
 print('=== Training the model ===')
 for ep in range(args.epochs):
     total_loss = 0
     exp_lr_scheduler.step()
     model.train()
-    for imgs, _, degree_bins in train_loader:
+    num_batches = len(train_loader)
+    for index, loader_item in enumerate(train_loader):
+        imgs, _, degree_bins = loader_item
         imgs, degree_bins = Variable(imgs.cuda()), Variable(degree_bins.cuda())
         out = model(imgs)
         loss = criterion(out, degree_bins)
@@ -95,15 +100,16 @@ for ep in range(args.epochs):
         loss.backward()
         optimizer.step()
         total_loss+=float(loss.item())
+        print('Epoch {} [{}/{}]\t Loss: {:.6f}\t Total Loss: {:.6f}'.format(ep, index, num_batches, total_loss/num_batches, total_loss))
 
     if (ep+1)%1==0:
-        print('Epoch: {}\t Loss: {:.6f}'.format(ep,total_loss/len(train_loader)))
         acc = test(valid_loader,model, criterion)
         print('Validation acc: {:.2f}'.format(acc))
         if acc > best_test_acc:
             print('Best test acc %.03f.Saving the model to %s' % (acc, args.output))
             torch.save(model.state_dict(), args.output)
             best_test_acc = acc
+        print('------------------------------------------------------------')
 
 print('=== Finished training the model ===')
 print('Model saved to', args.output)
