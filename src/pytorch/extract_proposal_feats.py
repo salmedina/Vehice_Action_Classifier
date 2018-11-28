@@ -17,7 +17,7 @@ device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 print('Torch device:', device)
 
 def load_resnet(model_path, num_bins):
-    resnet = ResNet18(num_classes=num_bins)
+    resnet = ResNet18(num_classes=num_bins, use_pretrained=False)
     resnet.load_state_dict(torch.load(model_path))
     modules = list(resnet.children())[:-1]
     resnet = nn.Sequential(*modules).to(device)

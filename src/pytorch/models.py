@@ -19,9 +19,9 @@ class ResNet50(nn.Module):
         return y
 
 class ResNet18(nn.Module):
-    def __init__(self, num_classes, **kwargs):
+    def __init__(self, num_classes, use_pretrained=True,**kwargs):
         super(ResNet18, self).__init__()
-        resnet = torchvision.models.resnet18(pretrained=True)
+        resnet = torchvision.models.resnet18(pretrained=use_pretrained)
         self.base = nn.Sequential(*list(resnet.children())[:-2])
         self.classifier = nn.Linear(resnet.fc.in_features, num_classes)
         self.feat_dim = resnet.fc.in_features # feature dimension
