@@ -28,6 +28,6 @@ def get_video_ids(sid):
     :return: list of video ids
     '''
     if sid not in range(get_num_scenes()):
-        return []
+        return None
 
     return scene_video_ids_list[sid]
