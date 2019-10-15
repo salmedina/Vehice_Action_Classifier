@@ -36,7 +36,6 @@ def main(source_dir, output_dir):
     xml_file_list = glob.glob(join(source_dir, '*.xml'))
     Parallel(n_jobs=mp.cpu_count())(delayed(process_xml)(xml_filepath=f, output_dir=output_dir) for f in xml_file_list)
 
-
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description='Extracts orientation from DETRAC dataset')
     parser.add_argument('-s', dest='sourceDir', help='Source dir with DETRAC annotation files')
