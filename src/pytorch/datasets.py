@@ -1,5 +1,5 @@
 import os.path as osp
-
+import numpy as np
 from PIL import Image
 from torch.utils.data import Dataset
 
@@ -20,18 +20,19 @@ def read_image(img_path):
     return img
 
 
-class CarOrientationDataset(Dataset):
+class DegOrientationDataset(Dataset):
 
     def __init__(self, imgfnlist, degreelist, binlist, transform=None):
         self.imgfnlist, self.degreelist, self.binlist = imgfnlist, degreelist, binlist
         self.transform = transform
 
     def __getitem__(self, idx):
-        imgfn, degree, binn = self.imgfnlist[idx], self.degreelist[idx], self.binlist[idx]
+        imgfn, angle, binn = self.imgfnlist[idx], self.degreelist[idx], self.binlist[idx]
         img = read_image(imgfn)
         if self.transform is not None:
             img = self.transform(img)
-        return img, degree, binn
+
+        return img, int(angle), int(binn)
 
     def __len__(self):
         return len(self.imgfnlist)

@@ -11,7 +11,7 @@ from torch.autograd import Variable
 from torch.optim import Adam
 from torch.optim import lr_scheduler
 from torch.utils.data import DataLoader
-import pdb
+import datetime
 
 device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 print('Torch device:', device)
@@ -52,7 +52,7 @@ parser.add_argument('--batch_size', type=int, default=32, help='Batch size')
 parser.add_argument('--num_workers', type=int, default=16, help='Num of workers for data loading')
 parser.add_argument('--bins', type=int, default=16, help='Num bins')
 parser.add_argument('--early_stop', type=int, default=10, help='Num. epochs with no improvement')
-parser.add_argument('--output', type=str, default='./model_state.pt', help='Save path for the trained model')
+parser.add_argument('--output', type=str, default='./model_state.pth', help='Save path for the trained model')
 parser.add_argument('--valid_freq', type=int, default=5, help="Epoch frequency under which the model is validated")
 args = parser.parse_args()
 
@@ -95,6 +95,8 @@ print('=== Running Initial Validation ===')
 test(valid_loader, model)
 
 print('=== Training the model ===')
+now = datetime.datetime.now()
+print(now.strftime("%Y-%m-%d %H:%M"))
 best_test_acc = 0.0
 for ep in range(args.epochs):
     start_time = time.time()
@@ -129,7 +131,7 @@ for ep in range(args.epochs):
         print('Validation Accuracy: {:.4f}'.format(acc))
         if acc > best_test_acc:
             new_best = True
-            # print('Best test acc %.03f.Saving the model to %s' % (acc, args.output))
+            print('Best test acc %.03f.Saving the model to %s' % (acc, args.output))
             torch.save(model.state_dict(), args.output)
             best_test_acc = acc
 
