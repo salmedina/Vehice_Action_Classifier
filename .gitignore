@@ -5,3 +5,5 @@ src/.DS_Store
 */.ipynb_checkpoints
 *.pth
 *.ph
+notebooks/.ipynb_checkpoints/*
+output/
