@@ -3,3 +3,5 @@ src/.DS_Store
 *.pyc
 .idea
 */.ipynb_checkpoints
+*.pth
+*.ph
