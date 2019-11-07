@@ -1,3 +1,4 @@
+import os
 import os.path as osp
 import numpy as np
 from PIL import Image
@@ -33,6 +34,31 @@ class DegOrientationDataset(Dataset):
             img = self.transform(img)
 
         return img, int(angle), int(binn)
+
+    def __len__(self):
+        return len(self.imgfnlist)
+
+
+class MevaOrientationDataset(Dataset):
+    def __init__(self, image_dir, csv_path, transform=None):
+        data = [l.strip().split(',') for l in open(csv_path).readlines()]
+        self.imgfnlist = list()
+        self.labellist = list()
+        self.transform = transform
+
+        self.imgfnlist, self.labellist = zip(*[(osp.join(image_dir, fn), int(label)) for fn, label in data])
+        # for imagefn, label in [(osp.join(image_dir, fn), int(label)) for fn, label in data]:
+        #     if osp.exists(imagefn):
+        #         self.imgfnlist.append(imagefn)
+        #         self.labellist.append(label)
+
+    def __getitem__(self, idx):
+        imgfn, binn = self.imgfnlist[idx], self.labellist[idx]
+        img = read_image(imgfn)
+        if self.transform is not None:
+            img = self.transform(img)
+
+        return img, int(binn)
 
     def __len__(self):
         return len(self.imgfnlist)
